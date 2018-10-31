@@ -11,7 +11,11 @@ public class CameraFollow : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         offset = new Vector3(0.0f, 10.0f, -10.0f);
-        transform.LookAt(objectToFollow.transform);
+
+        if (objectToFollow)
+        {
+            transform.LookAt(objectToFollow.transform);
+        }
     }
 
     // Update is called once per frame
@@ -21,7 +25,11 @@ public class CameraFollow : MonoBehaviour {
         {
             transform.position = objectToFollow.transform.position + offset;
             transform.LookAt(objectToFollow.transform);
-
         }
+    }
+
+    public void SetObjectToFollow(GameObject toFollow)
+    {
+        objectToFollow = toFollow;
     }
 }

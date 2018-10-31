@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
 
     private Rigidbody m_Rigidbody;
@@ -22,14 +23,28 @@ public class PlayerController : MonoBehaviour
         m_Rigidbody = GetComponent<Rigidbody>();
     }
 
+    public override void OnStartLocalPlayer()
+    {
+        GetComponent<MeshRenderer>().material.color = Color.blue;
+        Camera.main.GetComponent<CameraFollow>().SetObjectToFollow(gameObject);
+    }
+
     private void Update()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
         HandleInputs();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
         HandleMovement();
     }
 
@@ -54,7 +69,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetButtonDown("Fire1"))
         {
-            Fire();
+            CmdFire();
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -62,7 +77,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Fire()
+    [Command]
+    void CmdFire()
     {
         // Create the Bullet from the Bullet Prefab
         var bullet = (GameObject)Instantiate(
@@ -72,6 +88,9 @@ public class PlayerController : MonoBehaviour
 
         // Add velocity to the bullet
         bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * bulletSpeed;
+
+        // Spawn the bullet on all Clients
+        NetworkServer.Spawn(bullet);
 
         // Destroy the bullet after 2 seconds
         Destroy(bullet, 2.0f);
